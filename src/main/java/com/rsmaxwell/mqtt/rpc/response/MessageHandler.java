@@ -1,6 +1,7 @@
 package com.rsmaxwell.mqtt.rpc.response;
 
 import java.util.HashMap;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -8,6 +9,7 @@ import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
 import org.eclipse.paho.mqttv5.client.MqttCallback;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
+import org.eclipse.paho.mqttv5.common.packet.UserProperty;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rsmaxwell.mqtt.rpc.common.Adapter;
@@ -85,7 +87,7 @@ public class MessageHandler extends Adapter implements MqttCallback {
 
 		log.debug(String.format("responseTopic:   %s", responseTopic));
 
-		Result result = getResult(responseTopic, requestMessage);
+		Result result = getResult(responseTopic, requestMessage, requestProperties.getUserProperties());
 		log.debug(String.format("result:   %s", result));
 
 		MqttMessage responseMessage = getResponseMessage(requestMessage, result);
@@ -101,7 +103,7 @@ public class MessageHandler extends Adapter implements MqttCallback {
 		}
 	}
 
-	private Result getResult(String responseTopic, MqttMessage requestMessage) {
+	private Result getResult(String responseTopic, MqttMessage requestMessage, List<UserProperty> userProperties) {
 		Result result = null;
 
 		String payload = new String(requestMessage.getPayload());
@@ -133,7 +135,7 @@ public class MessageHandler extends Adapter implements MqttCallback {
 
 		try {
 			log.debug("before handleRequest");
-			result = handler.handleRequest(ctx, request.getArgs());
+			result = handler.handleRequest(ctx, request.getArgs(), userProperties);
 		} catch (Unauthorised e) {
 			log.debug("Unauthorised");
 			return Result.unauthorised();
