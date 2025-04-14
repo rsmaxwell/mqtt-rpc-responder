@@ -20,6 +20,7 @@ dependencies {
     implementation libs.commons.cli
     implementation libs.jackson.databind
     implementation libs.log4j.api
+    implementation libs.io
 
     api project(':mqtt-rpc-common')
 }

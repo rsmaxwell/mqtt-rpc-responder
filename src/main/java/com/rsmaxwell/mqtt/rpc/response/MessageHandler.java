@@ -19,6 +19,8 @@ import com.rsmaxwell.mqtt.rpc.common.Result;
 import com.rsmaxwell.mqtt.rpc.utilities.BadRequest;
 import com.rsmaxwell.mqtt.rpc.utilities.Unauthorised;
 
+import io.jsonwebtoken.ExpiredJwtException;
+
 public class MessageHandler extends Adapter implements MqttCallback {
 
 	private static final Logger log = LogManager.getLogger(MessageHandler.class);
@@ -136,6 +138,8 @@ public class MessageHandler extends Adapter implements MqttCallback {
 		try {
 			log.debug("before handleRequest");
 			result = handler.handleRequest(ctx, request.getArgs(), userProperties);
+		} catch (ExpiredJwtException e) {
+			log.info("ExpiredJwtException");
 		} catch (Unauthorised e) {
 			log.debug("Unauthorised");
 			return Result.unauthorised();
