@@ -7,6 +7,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
 import org.eclipse.paho.mqttv5.client.MqttCallback;
+import org.eclipse.paho.mqttv5.client.MqttDisconnectResponse;
+import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
 import org.eclipse.paho.mqttv5.common.packet.UserProperty;
@@ -54,6 +56,7 @@ public class MessageHandler extends Adapter implements MqttCallback {
 		}
 	}
 
+	@Override
 	public void messageArrived(String topic, MqttMessage requestMessage) throws Exception {
 		log.info(String.format("Received request: %s", new String(requestMessage.getPayload())));
 
@@ -103,6 +106,21 @@ public class MessageHandler extends Adapter implements MqttCallback {
 			}
 			return;
 		}
+	}
+
+	@Override
+	public void disconnected(MqttDisconnectResponse response) {
+		log.warn("MQTT disconnected: " + response.getReasonString());
+	}
+
+	@Override
+	public void mqttErrorOccurred(MqttException exception) {
+		log.error("MQTT error: ", exception);
+	}
+
+	@Override
+	public void connectComplete(boolean reconnect, String serverURI) {
+		log.info("MQTT connect complete (reconnect=" + reconnect + ")");
 	}
 
 	private Result getResult(String responseTopic, MqttMessage requestMessage, List<UserProperty> userProperties) {
