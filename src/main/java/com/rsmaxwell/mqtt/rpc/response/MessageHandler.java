@@ -1,5 +1,6 @@
 package com.rsmaxwell.mqtt.rpc.response;
 
+import java.net.HttpURLConnection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -18,6 +19,7 @@ import com.rsmaxwell.mqtt.rpc.common.Adapter;
 import com.rsmaxwell.mqtt.rpc.common.Request;
 import com.rsmaxwell.mqtt.rpc.common.Response;
 import com.rsmaxwell.mqtt.rpc.common.Result;
+import com.rsmaxwell.mqtt.rpc.common.Status;
 import com.rsmaxwell.mqtt.rpc.utilities.BadRequest;
 import com.rsmaxwell.mqtt.rpc.utilities.Unauthorised;
 
@@ -204,12 +206,38 @@ public class MessageHandler extends Adapter implements MqttCallback {
 		int qos = 0;
 		MqttProperties responseProperties = new MqttProperties();
 		responseProperties.setCorrelationData(requestMessage.getProperties().getCorrelationData());
+
 		MqttMessage responseMessage = new MqttMessage(body);
 		responseMessage.setProperties(responseProperties);
 		responseMessage.setQos(qos);
 
+		List<UserProperty> userProperties = responseMessage.getProperties().getUserProperties();
+		userProperties.add(new UserProperty("status", getStatusAsJson(response)));
+
 		log.info(String.format("Sending reply: %s", new String(body)));
 
 		return responseMessage;
+	}
+
+	public String getStatusAsJson(Response response) {
+
+		int code = 0;
+		String message = "ok";
+		try {
+			code = response.getInteger("code");
+			message = response.getString("message");
+		} catch (Exception e) {
+			code = HttpURLConnection.HTTP_INTERNAL_ERROR;
+			message = e.getMessage();
+		}
+
+		String json = "";
+		try {
+			json = mapper.writer().writeValueAsString(new Status(code, message));
+		} catch (Exception e) {
+			json = "{ \"code\": 500, \"message\": \"internal error\"}";
+		}
+
+		return json;
 	}
 }
