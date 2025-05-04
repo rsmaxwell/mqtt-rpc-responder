@@ -1,13 +1,11 @@
 package com.rsmaxwell.mqtt.rpc.response.handlers;
 
-import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.eclipse.paho.mqttv5.common.packet.UserProperty;
 
-import com.rsmaxwell.mqtt.rpc.common.Result;
+import com.rsmaxwell.mqtt.rpc.common.Response;
 import com.rsmaxwell.mqtt.rpc.common.Utilities;
 import com.rsmaxwell.mqtt.rpc.response.RequestHandler;
 
@@ -16,7 +14,7 @@ public class CalculatorHandler extends RequestHandler {
 	private static final Logger logger = LogManager.getLogger(CalculatorHandler.class);
 
 	@Override
-	public Result handleRequest(Object ctx, Map<String, Object> args, List<UserProperty> userProperties) throws Exception {
+	public Response handleRequest(Object ctx, Map<String, Object> args) throws Exception {
 		logger.traceEntry();
 
 		try {
@@ -45,13 +43,13 @@ public class CalculatorHandler extends RequestHandler {
 				throw new Exception(text);
 			}
 
-			return Result.success(value);
+			return Response.success(value);
 		} catch (ArithmeticException e) {
 			logger.debug(String.format("%s: %s", e.getClass().getSimpleName(), e.getMessage()));
-			return Result.badRequest(e.getMessage());
+			return Response.badRequest(e.getMessage());
 		} catch (Exception e) {
 			logger.catching(e);
-			return Result.badRequest(e.getMessage());
+			return Response.badRequest(e.getMessage());
 		}
 	}
 }
