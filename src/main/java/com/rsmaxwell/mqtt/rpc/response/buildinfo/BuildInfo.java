@@ -13,4 +13,14 @@ public class BuildInfo extends AbstractBuildInfo {
 		gitBranch = "$GIT_BRANCH";
 		gitURL = "$GIT_URL";
 	}
+
+	public static String toStaticString() {
+		BuildInfo info = new BuildInfo();
+		return info.toString();
+	}
+
+	@Override
+	public void printAll() throws Exception {
+		System.out.println(toStaticString());
+	}
 }

@@ -20,6 +20,7 @@ import com.rsmaxwell.mqtt.rpc.common.Request;
 import com.rsmaxwell.mqtt.rpc.common.Response;
 import com.rsmaxwell.mqtt.rpc.common.Result;
 import com.rsmaxwell.mqtt.rpc.common.Status;
+import com.rsmaxwell.mqtt.rpc.response.buildinfo.BuildInfo;
 import com.rsmaxwell.mqtt.rpc.utilities.BadRequest;
 import com.rsmaxwell.mqtt.rpc.utilities.Unauthorised;
 
@@ -214,8 +215,14 @@ public class MessageHandler extends Adapter implements MqttCallback {
 		List<UserProperty> userProperties = responseMessage.getProperties().getUserProperties();
 		userProperties.add(new UserProperty("status", getStatusAsJson(response)));
 
-		log.info(String.format("Sending reply: %s", new String(body)));
-
+		try {
+			String json = mapper.writer().writeValueAsString(userProperties);
+			log.info(String.format(BuildInfo.toStaticString()));
+			log.info(String.format("Sending status: %s", json));
+			log.info(String.format("Sending reply: %s", new String(body)));
+		} catch (Exception e) {
+			log.info(String.format("error formatting userProperties: %s", userProperties));
+		}
 		return responseMessage;
 	}
 
