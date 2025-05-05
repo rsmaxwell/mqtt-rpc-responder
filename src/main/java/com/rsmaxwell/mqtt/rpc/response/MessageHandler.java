@@ -93,7 +93,7 @@ public class MessageHandler extends Adapter implements MqttCallback {
 
 		log.debug(String.format("responseTopic:   %s", responseTopic));
 
-		Response response = getResponse(responseTopic, requestMessage);
+		Response response = getResponse(responseTopic, requestMessage, requestProperties.getUserProperties());
 		log.debug(String.format("result:   %s", response));
 
 		MqttMessage responseMessage = getResponseMessage(requestMessage, response);
@@ -109,7 +109,7 @@ public class MessageHandler extends Adapter implements MqttCallback {
 		}
 	}
 
-	private Response getResponse(String responseTopic, MqttMessage requestMessage) {
+	private Response getResponse(String responseTopic, MqttMessage requestMessage, List<UserProperty> userProperties) {
 
 		byte[] payload = requestMessage.getPayload();
 
@@ -138,7 +138,7 @@ public class MessageHandler extends Adapter implements MqttCallback {
 
 			try {
 				log.debug("before handleRequest");
-				response = handler.handleRequest(ctx, request.getArgs());
+				response = handler.handleRequest(ctx, request.getArgs(), userProperties);
 			} catch (ExpiredJwtException e) {
 				log.info("ExpiredJwtException");
 				response = Response.badRequest(e.getMessage());
