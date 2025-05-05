@@ -167,7 +167,7 @@ public class MessageHandler extends Adapter implements MqttCallback {
 		log.debug("encoding response");
 		byte[] payload = null;
 		try {
-			payload = mapper.writeValueAsBytes(response);
+			payload = mapper.writeValueAsBytes(response.getPayload());
 		} catch (Exception e) {
 			log.catching(e);
 			response = Response.internalError(e.getMessage());
@@ -184,14 +184,15 @@ public class MessageHandler extends Adapter implements MqttCallback {
 		properties.setCorrelationData(requestMessage.getProperties().getCorrelationData());
 
 		List<UserProperty> userProperties = properties.getUserProperties();
-		userProperties.add(new UserProperty("status", getStatusAsJson(response.getStatus())));
+		Status status = response.getStatus();
+		userProperties.add(new UserProperty("status", getStatusAsJson(status)));
 
 		MqttMessage responseMessage = new MqttMessage(payload);
 		responseMessage.setProperties(properties);
 		responseMessage.setQos(qos);
 
 		try {
-			String json = mapper.writer().writeValueAsString(userProperties);
+			String json = mapper.writer().writeValueAsString(status);
 			log.info(String.format(BuildInfo.toStaticString()));
 			log.info(String.format("Sending status:  %s", json));
 			log.info(String.format("Sending payload: %s", new String(payload)));
