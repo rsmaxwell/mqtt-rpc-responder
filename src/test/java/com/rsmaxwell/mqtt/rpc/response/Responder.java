@@ -62,7 +62,7 @@ public class Responder {
 		MqttAsyncClient client_responder = new MqttAsyncClient(server, clientID_responder, persistence);
 		MqttAsyncClient client_subscriber = new MqttAsyncClient(server, clientID_subscriber, persistence);
 
-		messageHandler.setClient(client_responder);
+		messageHandler.setResponderClient(client_responder);
 		client_subscriber.setCallback(messageHandler);
 
 		logger.info(String.format("Connecting to broker: %s as '%s'", server, clientID_responder));

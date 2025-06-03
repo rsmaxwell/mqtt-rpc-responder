@@ -28,7 +28,8 @@ public class MessageHandler extends Adapter implements MqttCallback {
 
 	private static final Logger log = LogManager.getLogger(MessageHandler.class);
 
-	private MqttAsyncClient client;
+	private MqttAsyncClient responderClient;
+	private MqttAsyncClient listenerClient;
 	private Object ctx;
 	private HashMap<String, RequestHandler> handlers;
 	private ObjectMapper mapper = new ObjectMapper();
@@ -43,8 +44,20 @@ public class MessageHandler extends Adapter implements MqttCallback {
 		handlers.put(key, handler);
 	}
 
-	public void setClient(MqttAsyncClient client) {
-		this.client = client;
+	public void setResponderClient(MqttAsyncClient client) {
+		this.responderClient = client;
+	}
+
+	public MqttAsyncClient getResponderClient() {
+		return this.responderClient;
+	}
+
+	public void setListenerClient(MqttAsyncClient client) {
+		this.listenerClient = client;
+	}
+
+	public MqttAsyncClient getListenerClient() {
+		return this.listenerClient;
 	}
 
 	public void setContext(Object ctx) {
@@ -98,7 +111,7 @@ public class MessageHandler extends Adapter implements MqttCallback {
 
 		MqttMessage responseMessage = getResponseMessage(requestMessage, response);
 
-		client.publish(responseTopic, responseMessage).waitForCompletion();
+		responderClient.publish(responseTopic, responseMessage).waitForCompletion();
 
 		if (response.isQuit()) {
 			log.debug("quitting");
