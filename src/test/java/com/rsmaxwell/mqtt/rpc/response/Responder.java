@@ -22,8 +22,8 @@ public class Responder {
 
 	private static final Logger logger = LogManager.getLogger(Responder.class);
 
-	static String clientID_responder = "responder";
-	static String clientID_subscriber = "listener";
+	static String clientID_publisher = "publisher";
+	static String clientID_listener = "listener";
 	static String requestTopic = "request";
 
 	static int qos = 0;
@@ -59,13 +59,13 @@ public class Responder {
 
 		MqttClientPersistence persistence = new MqttDefaultFilePersistence();
 
-		MqttAsyncClient client_responder = new MqttAsyncClient(server, clientID_responder, persistence);
-		MqttAsyncClient client_subscriber = new MqttAsyncClient(server, clientID_subscriber, persistence);
+		MqttAsyncClient client_responder = new MqttAsyncClient(server, clientID_publisher, persistence);
+		MqttAsyncClient client_subscriber = new MqttAsyncClient(server, clientID_listener, persistence);
 
-		messageHandler.setResponderClient(client_responder);
+		messageHandler.setPublisherClient(client_responder);
 		client_subscriber.setCallback(messageHandler);
 
-		logger.info(String.format("Connecting to broker: %s as '%s'", server, clientID_responder));
+		logger.info(String.format("Connecting to broker: %s as '%s'", server, clientID_publisher));
 		MqttConnectionOptions connOpts_responder = new MqttConnectionOptions();
 		connOpts_responder.setUserName(username);
 		connOpts_responder.setPassword(password.getBytes());
@@ -80,7 +80,7 @@ public class Responder {
 			return;
 		}
 
-		logger.info(String.format("Connecting to broker: %s as '%s'", server, clientID_subscriber));
+		logger.info(String.format("Connecting to broker: %s as '%s'", server, clientID_listener));
 		MqttConnectionOptions connOpts_subscriber = new MqttConnectionOptions();
 		connOpts_subscriber.setUserName(username);
 		connOpts_subscriber.setPassword(password.getBytes());
