@@ -1,5 +1,6 @@
 package com.rsmaxwell.mqtt.rpc.response;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 
@@ -70,11 +71,28 @@ public class MessageHandler extends Adapter implements MqttCallback {
 		}
 	}
 
-	@Override
-	public void messageArrived(String topic, MqttMessage requestMessage) throws Exception {
-		log.info(String.format("Received request: %s", new String(requestMessage.getPayload())));
+	private static final int MAX_REQUEST_BYTES = 20 * 1024 * 1024; // e.g. 20 MiB
+	private static final int LOG_PREVIEW_BYTES = 256;
 
-		MqttProperties requestProperties = requestMessage.getProperties();
+	@Override
+	public void messageArrived(String topic, MqttMessage message) throws Exception {
+
+		byte[] payload = message.getPayload();
+		if (payload == null) {
+			log.warn("Empty payload on topic {}", topic);
+			return;
+		}
+
+		int n = Math.min(payload.length, LOG_PREVIEW_BYTES);
+		String prefix = new String(payload, 0, n, StandardCharsets.UTF_8);
+		log.info(String.format("Received request: %s", prefix));
+
+		if (payload.length > MAX_REQUEST_BYTES) {
+			log.warn("Dropping oversized request: {} bytes > limit {} on topic {}", payload.length, MAX_REQUEST_BYTES, topic);
+			return;
+		}
+
+		MqttProperties requestProperties = message.getProperties();
 		if (requestProperties == null) {
 			log.error("discarding request with no properties");
 			return;
@@ -106,10 +124,10 @@ public class MessageHandler extends Adapter implements MqttCallback {
 
 		log.debug(String.format("responseTopic:   %s", responseTopic));
 
-		Response response = getResponse(responseTopic, requestMessage, requestProperties.getUserProperties());
+		Response response = getResponse(responseTopic, message, requestProperties.getUserProperties());
 		log.debug(String.format("result:   %s", response));
 
-		MqttMessage responseMessage = getResponseMessage(requestMessage, response);
+		MqttMessage responseMessage = getResponseMessage(message, response);
 
 		publisherClient.publish(responseTopic, responseMessage).waitForCompletion();
 
