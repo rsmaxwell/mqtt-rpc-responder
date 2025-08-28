@@ -79,7 +79,7 @@ public class MessageHandler extends Adapter implements MqttCallback {
 
 		byte[] payload = message.getPayload();
 		if (payload == null) {
-			log.warn("Empty payload on topic {}", topic);
+			log.warn("dropping request with no payload on topic {}", topic);
 			return;
 		}
 
@@ -88,13 +88,13 @@ public class MessageHandler extends Adapter implements MqttCallback {
 		log.info(String.format("Received request: %s", prefix));
 
 		if (payload.length > MAX_REQUEST_BYTES) {
-			log.warn("Dropping oversized request: {} bytes > limit {} on topic {}", payload.length, MAX_REQUEST_BYTES, topic);
+			log.warn("dropping oversized request: {} bytes > limit {} on topic {}", payload.length, MAX_REQUEST_BYTES, topic);
 			return;
 		}
 
 		MqttProperties requestProperties = message.getProperties();
 		if (requestProperties == null) {
-			log.error("discarding request with no properties");
+			log.warn("dropping request with no properties");
 			return;
 		}
 
@@ -104,7 +104,7 @@ public class MessageHandler extends Adapter implements MqttCallback {
 			String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(requestProperties);
 			log.debug(String.format("Properties:\n%s", json));
 
-			log.error("discarding request with no correlationData");
+			log.warn("dropping request with no correlationData");
 			return;
 		}
 
@@ -113,12 +113,12 @@ public class MessageHandler extends Adapter implements MqttCallback {
 
 		String responseTopic = requestProperties.getResponseTopic();
 		if (responseTopic == null) {
-			log.error("discarding request with no responseTopic");
+			log.warn("dropping request with no responseTopic");
 			return;
 		}
 
 		if (responseTopic.length() <= 0) {
-			log.error("discarding request with empty responseTopic");
+			log.warn("dropping request with empty responseTopic");
 			return;
 		}
 
