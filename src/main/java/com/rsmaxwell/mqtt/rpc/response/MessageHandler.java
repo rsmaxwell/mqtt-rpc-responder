@@ -195,7 +195,6 @@ public class MessageHandler extends Adapter implements MqttCallback {
 			response = Response.internalError("discarding request because response was null");
 		}
 
-		log.debug("encoding response");
 		byte[] payload = null;
 		try {
 			payload = mapper.writeValueAsBytes(response.getPayload());
@@ -210,7 +209,7 @@ public class MessageHandler extends Adapter implements MqttCallback {
 			response = Response.internalError(message);
 		}
 
-		int qos = 0;
+		int qos = 1;
 		MqttProperties properties = new MqttProperties();
 		properties.setCorrelationData(requestMessage.getProperties().getCorrelationData());
 
@@ -224,7 +223,7 @@ public class MessageHandler extends Adapter implements MqttCallback {
 
 		try {
 			String json = mapper.writer().writeValueAsString(status);
-			log.info(String.format(BuildInfo.toStaticString()));
+			log.debug(String.format(BuildInfo.toStaticString()));
 			log.info(String.format("Sending status:  %s", json));
 			log.info(String.format("Sending payload: %s", new String(payload)));
 		} catch (Exception e) {
