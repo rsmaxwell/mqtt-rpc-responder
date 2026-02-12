@@ -1,4 +1,4 @@
-# mqtt-rpc-response
+# mqtt-rpc-responder
 
 This project implements the responder part of Remote Procedure Call over mqtt (i.e request/response).
 This may be useful in the case of a webapp which needs to subscribe to events, and also to handle requests that need a particular  response  
