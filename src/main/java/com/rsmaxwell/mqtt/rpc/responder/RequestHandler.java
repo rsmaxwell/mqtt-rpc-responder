@@ -1,4 +1,4 @@
-package com.rsmaxwell.mqtt.rpc.response;
+package com.rsmaxwell.mqtt.rpc.responder;
 
 import java.util.List;
 import java.util.Map;

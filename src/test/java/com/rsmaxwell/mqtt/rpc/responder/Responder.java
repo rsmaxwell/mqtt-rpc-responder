@@ -1,4 +1,4 @@
-package com.rsmaxwell.mqtt.rpc.response;
+package com.rsmaxwell.mqtt.rpc.responder;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -14,9 +14,9 @@ import org.eclipse.paho.mqttv5.client.persist.MqttDefaultFilePersistence;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttSubscription;
 
-import com.rsmaxwell.mqtt.rpc.response.handlers.CalculatorHandler;
-import com.rsmaxwell.mqtt.rpc.response.handlers.GetPagesHandler;
-import com.rsmaxwell.mqtt.rpc.response.handlers.QuitHandler;
+import com.rsmaxwell.mqtt.rpc.responder.handlers.CalculatorHandler;
+import com.rsmaxwell.mqtt.rpc.responder.handlers.GetPagesHandler;
+import com.rsmaxwell.mqtt.rpc.responder.handlers.QuitHandler;
 
 public class Responder {
 

@@ -1,4 +1,4 @@
-package com.rsmaxwell.mqtt.rpc.response;
+package com.rsmaxwell.mqtt.rpc.responder;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -19,7 +19,7 @@ import com.rsmaxwell.mqtt.rpc.common.Adapter;
 import com.rsmaxwell.mqtt.rpc.common.Request;
 import com.rsmaxwell.mqtt.rpc.common.Response;
 import com.rsmaxwell.mqtt.rpc.common.Status;
-import com.rsmaxwell.mqtt.rpc.response.buildinfo.BuildInfo;
+import com.rsmaxwell.mqtt.rpc.responder.buildinfo.BuildInfo;
 import com.rsmaxwell.mqtt.rpc.utilities.BadRequest;
 import com.rsmaxwell.mqtt.rpc.utilities.Unauthorised;
 
