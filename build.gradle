@@ -1,5 +1,4 @@
 
-
 plugins {
     id 'java-library'
     id 'maven-publish'
@@ -12,14 +11,18 @@ repositories {
 
 dependencies {
     testImplementation libs.junit.jupiter
-    testImplementation libs.log4j.core
     testRuntimeOnly libs.junit.platform.launcher
+    testImplementation libs.log4j.core
+
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
 
     implementation libs.guava
     implementation libs.org.eclipse.paho.mqttv5.client
-    implementation libs.commons.cli
-    implementation libs.jackson.databind
     implementation libs.log4j.api
+    implementation libs.jackson.databind
+
+    implementation libs.commons.cli
     implementation libs.io
 
     api project(':mqtt-rpc-common')
@@ -39,39 +42,44 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
-ext {
-    repositoryName = findProperty('repositoryName') ?: repositoryName_default
-    projectVersion = findProperty('version') ?: version_default
-}
+
+
+def repoBase = findProperty("mavenRepoBaseUrl")
+if (!repoBase) throw new GradleException("mavenRepoBaseUrl is not set (project gradle.properties)")
+
+def pubUser = findProperty("mavenUser")
+if (!repoBase) throw new GradleException("mavenUser is not set (~/$HOME/gradle.properties)")
+
+def pubPassword = findProperty("mavenPassword")
+if (!repoBase) throw new GradleException("mavenPassword is not set (~/$HOME/gradle.properties)")
+
+
 
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifactId = projectArtifactId
-            groupId = projectGroupId
-            version = projectVersion
-
+            groupId = project.group.toString()
+            artifactId = project.name    // default anyway
+            version = project.version.toString()
             from components["java"]
         }
     }
 
     repositories {
         maven {
+            url = uri("${repoBase}/${findProperty('repo') ?: 'snapshots'}")
             credentials {
                 username = mavenUser
                 password = mavenPassword
             }
 
-            url = "${mavenRepositoryBaseURL}/${repositoryName}"
             allowInsecureProtocol = true
         }
     }
 }
 
 
-task getDeps {
-  copy {
-    from sourceSets.main.runtimeClasspath, sourceSets.test.runtimeClasspath
-    into 'runtime/'
-  }
+task getDeps(type: Copy) {
+  from sourceSets.main.runtimeClasspath, sourceSets.test.runtimeClasspath
+  into 'runtime/'
 }
