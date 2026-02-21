@@ -48,10 +48,10 @@ def repoBase = findProperty("mavenRepoBaseUrl")
 if (!repoBase) throw new GradleException("mavenRepoBaseUrl is not set (project gradle.properties)")
 
 def pubUser = findProperty("mavenUser")
-if (!repoBase) throw new GradleException("mavenUser is not set (~/$HOME/gradle.properties)")
+if (!pubUser) throw new GradleException("mavenUser is not set (~/$HOME/gradle.properties)")
 
 def pubPassword = findProperty("mavenPassword")
-if (!repoBase) throw new GradleException("mavenPassword is not set (~/$HOME/gradle.properties)")
+if (!pubPassword) throw new GradleException("mavenPassword is not set (~/$HOME/gradle.properties)")
 
 
 
