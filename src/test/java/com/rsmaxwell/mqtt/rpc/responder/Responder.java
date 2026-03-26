@@ -5,14 +5,14 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
 import org.eclipse.paho.mqttv5.client.MqttClientPersistence;
 import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.client.persist.MqttDefaultFilePersistence;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttSubscription;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.rsmaxwell.mqtt.rpc.responder.handlers.CalculatorHandler;
 import com.rsmaxwell.mqtt.rpc.responder.handlers.GetPagesHandler;
@@ -20,7 +20,7 @@ import com.rsmaxwell.mqtt.rpc.responder.handlers.QuitHandler;
 
 public class Responder {
 
-	private static final Logger logger = LogManager.getLogger(Responder.class);
+	private static final Logger logger = LoggerFactory.getLogger(Responder.class);
 
 	static String clientID_publisher = "publisher";
 	static String clientID_listener = "listener";

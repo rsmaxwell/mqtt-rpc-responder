@@ -4,8 +4,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
 import org.eclipse.paho.mqttv5.client.MqttCallback;
 import org.eclipse.paho.mqttv5.client.MqttDisconnectResponse;
@@ -13,6 +11,8 @@ import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
 import org.eclipse.paho.mqttv5.common.packet.UserProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rsmaxwell.mqtt.rpc.common.Adapter;
@@ -27,7 +27,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 
 public class MessageHandler extends Adapter implements MqttCallback {
 
-	private static final Logger log = LogManager.getLogger(MessageHandler.class);
+	private static final Logger log = LoggerFactory.getLogger(MessageHandler.class);
 
 	private MqttAsyncClient publisherClient;
 	private MqttAsyncClient listenerClient;
@@ -180,7 +180,7 @@ public class MessageHandler extends Adapter implements MqttCallback {
 				log.debug("BadRequest");
 				response = Response.badRequest(e.getMessage());
 			} catch (Exception e) {
-				log.catching(e);
+				log.error("Unhandled exception while handling request", e);
 				response = Response.internalError(e.getMessage());
 			}
 		}
@@ -199,7 +199,7 @@ public class MessageHandler extends Adapter implements MqttCallback {
 		try {
 			payload = mapper.writeValueAsBytes(response.getPayload());
 		} catch (Exception e) {
-			log.catching(e);
+			log.error("Unhandled exception while handling request", e);
 			response = Response.internalError(e.getMessage());
 		}
 

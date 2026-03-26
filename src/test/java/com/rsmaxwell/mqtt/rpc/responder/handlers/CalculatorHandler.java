@@ -3,9 +3,9 @@ package com.rsmaxwell.mqtt.rpc.responder.handlers;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.eclipse.paho.mqttv5.common.packet.UserProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.rsmaxwell.mqtt.rpc.common.Response;
 import com.rsmaxwell.mqtt.rpc.common.Utilities;
@@ -13,11 +13,11 @@ import com.rsmaxwell.mqtt.rpc.responder.RequestHandler;
 
 public class CalculatorHandler extends RequestHandler {
 
-	private static final Logger logger = LogManager.getLogger(CalculatorHandler.class);
+	private static final Logger logger = LoggerFactory.getLogger(CalculatorHandler.class);
 
 	@Override
 	public Response handleRequest(Object ctx, Map<String, Object> args, List<UserProperty> userProperties) throws Exception {
-		logger.traceEntry();
+		logger.trace("Entering method");
 
 		try {
 			String operation = Utilities.getString(args, "operation");
@@ -50,7 +50,7 @@ public class CalculatorHandler extends RequestHandler {
 			logger.debug(String.format("%s: %s", e.getClass().getSimpleName(), e.getMessage()));
 			return Response.badRequest(e.getMessage());
 		} catch (Exception e) {
-			logger.catching(e);
+			logger.error("Unhandled exception while handling request", e);
 			return Response.badRequest(e.getMessage());
 		}
 	}
