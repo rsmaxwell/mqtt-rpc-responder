@@ -19,9 +19,8 @@ import com.rsmaxwell.mqtt.rpc.common.Adapter;
 import com.rsmaxwell.mqtt.rpc.common.Request;
 import com.rsmaxwell.mqtt.rpc.common.Response;
 import com.rsmaxwell.mqtt.rpc.common.Status;
+import com.rsmaxwell.mqtt.rpc.exceptions.RpcStatusException;
 import com.rsmaxwell.mqtt.rpc.responder.buildinfo.BuildInfo;
-import com.rsmaxwell.mqtt.rpc.utilities.BadRequest;
-import com.rsmaxwell.mqtt.rpc.utilities.Unauthorised;
 
 import io.jsonwebtoken.ExpiredJwtException;
 
@@ -151,62 +150,64 @@ public class MessageHandler extends Adapter implements MqttCallback {
 			String payloadString = new String(payload);
 			request = mapper.readValue(payloadString, Request.class);
 		} catch (Exception e) {
-			response = Response.badRequest(e.getMessage());
+			response = Response.status(Status.BAD_REQUEST, e.getMessage());
 		}
 
-		if (request == null) {
-			response = Response.badRequest("missing request");
+		if (request == null && response == null) {
+			response = Response.status(Status.BAD_REQUEST, "missing request");
 		} else if (request.getFunction() == null) {
-			response = Response.badRequest("missing function");
+			response = Response.status(Status.BAD_REQUEST, "missing function");
 		} else if (request.getFunction().length() <= 0) {
-			response = Response.badRequest("empty function");
+			response = Response.status(Status.BAD_REQUEST, "empty function");
 		} else if (response == null) {
 
 			RequestHandler handler = handlers.get(request.getFunction());
 			if (handler == null) {
-				response = Response.badRequest(String.format("unexpected function: %s", request.getFunction()));
-			}
-
-			try {
-				log.debug("before handleRequest");
-				response = handler.handleRequest(ctx, request.getArgs(), userProperties);
-			} catch (ExpiredJwtException e) {
-				log.info("ExpiredJwtException");
-				response = Response.badRequest(e.getMessage());
-			} catch (Unauthorised e) {
-				log.debug("Unauthorised");
-				response = Response.unauthorized();
-			} catch (BadRequest e) {
-				log.debug("BadRequest");
-				response = Response.badRequest(e.getMessage());
-			} catch (Exception e) {
-				log.error("Unhandled exception while handling request", e);
-				response = Response.internalError(e.getMessage());
+				response = Response.status(Status.BAD_REQUEST, String.format("unexpected function: %s", request.getFunction()));
+			} else {
+				try {
+					log.debug("before handleRequest");
+					response = handler.handleRequest(ctx, request.getArgs(), userProperties);
+				} catch (ExpiredJwtException e) {
+					log.info("ExpiredJwtException");
+					response = Response.status(Status.BAD_REQUEST, e.getMessage());
+				} catch (RpcStatusException e) {
+					log.debug("RPC status exception: {}", e.getStatus());
+					response = Response.status(e.getStatus(), e.getMessage());
+				} catch (Exception e) {
+					log.error("Unhandled exception while handling request", e);
+					response = Response.status(Status.INTERNAL_ERROR, e.getMessage());
+				}
 			}
 		}
 
 		log.debug(String.format("returning: %s", response.toString()));
 		return response;
+
 	}
 
 	private MqttMessage getResponseMessage(MqttMessage requestMessage, Response response) {
 
 		if (response == null) {
-			response = Response.internalError("discarding request because response was null");
+			response = Response.status(Status.INTERNAL_ERROR, "discarding request because response was null");
 		}
 
 		byte[] payload = null;
 		try {
 			payload = mapper.writeValueAsBytes(response.getPayload());
 		} catch (Exception e) {
-			log.error("Unhandled exception while handling request", e);
-			response = Response.internalError(e.getMessage());
-		}
+			log.error("Failed to serialize RPC response", e);
+			Response fallback = Response.status(Status.INTERNAL_ERROR, "Failed to serialize RPC response");
+			try {
+				payload = mapper.writeValueAsBytes(fallback.getPayload());
+			} catch (Exception fallbackException) {
+				log.error("Failed to serialize fallback RPC response", fallbackException);
 
-		if (payload == null) {
-			String message = "response payload is null";
-			log.error(message);
-			response = Response.internalError(message);
+				// Last-resort hard-coded JSON. Avoids returning null or crashing
+				// while trying to report an error about error-reporting.
+				String hardcodedFallback = "{\"status\":{\"code\":500,\"message\":\"Failed to serialize RPC response\"}}";
+				payload = hardcodedFallback.getBytes(StandardCharsets.UTF_8);
+			}
 		}
 
 		int qos = 1;
@@ -229,7 +230,7 @@ public class MessageHandler extends Adapter implements MqttCallback {
 		} catch (Exception e) {
 			String message = String.format("error formatting userProperties: %s", userProperties);
 			log.info(message);
-			response = Response.internalError(message);
+			response = Response.status(Status.INTERNAL_ERROR, message);
 		}
 		return responseMessage;
 	}

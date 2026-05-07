@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.rsmaxwell.mqtt.rpc.common.Response;
+import com.rsmaxwell.mqtt.rpc.common.Status;
 import com.rsmaxwell.mqtt.rpc.common.Utilities;
 import com.rsmaxwell.mqtt.rpc.responder.RequestHandler;
 
@@ -48,10 +49,10 @@ public class CalculatorHandler extends RequestHandler {
 			return Response.success(value);
 		} catch (ArithmeticException e) {
 			logger.debug(String.format("%s: %s", e.getClass().getSimpleName(), e.getMessage()));
-			return Response.badRequest(e.getMessage());
+			return Response.status(Status.BAD_REQUEST, e.getMessage());
 		} catch (Exception e) {
 			logger.error("Unhandled exception while handling request", e);
-			return Response.badRequest(e.getMessage());
+			return Response.status(Status.BAD_REQUEST, e.getMessage());
 		}
 	}
 }
