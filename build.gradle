@@ -13,9 +13,6 @@ dependencies {
     testImplementation libs.junit.jupiter
     testRuntimeOnly libs.junit.platform.launcher
 
-    compileOnly libs.lombok
-    annotationProcessor libs.lombok
-
     implementation libs.guava
     implementation libs.org.eclipse.paho.mqttv5.client
     implementation libs.slf4j
@@ -29,7 +26,7 @@ dependencies {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(25)
     }
     withSourcesJar()
 }

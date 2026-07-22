@@ -130,7 +130,7 @@ public class MessageHandler extends Adapter implements MqttCallback {
 
 		publisherClient.publish(responseTopic, responseMessage).waitForCompletion();
 
-		if (response.isQuit()) {
+		if (response.quit()) {
 			log.debug("quitting");
 			synchronized (keepRunning) {
 				keepRunning.notify();
@@ -155,19 +155,19 @@ public class MessageHandler extends Adapter implements MqttCallback {
 
 		if (request == null && response == null) {
 			response = Response.status(Status.BAD_REQUEST, "missing request");
-		} else if (request.getFunction() == null) {
+		} else if (request.function() == null) {
 			response = Response.status(Status.BAD_REQUEST, "missing function");
-		} else if (request.getFunction().length() <= 0) {
+		} else if (request.function().length() <= 0) {
 			response = Response.status(Status.BAD_REQUEST, "empty function");
 		} else if (response == null) {
 
-			RequestHandler handler = handlers.get(request.getFunction());
+			RequestHandler handler = handlers.get(request.function());
 			if (handler == null) {
-				response = Response.status(Status.BAD_REQUEST, String.format("unexpected function: %s", request.getFunction()));
+				response = Response.status(Status.BAD_REQUEST, String.format("unexpected function: %s", request.function()));
 			} else {
 				try {
 					log.debug("before handleRequest");
-					response = handler.handleRequest(ctx, request.getArgs(), userProperties);
+					response = handler.handleRequest(ctx, request.args(), userProperties);
 				} catch (ExpiredJwtException e) {
 					log.info("ExpiredJwtException");
 					response = Response.status(Status.BAD_REQUEST, e.getMessage());
@@ -194,12 +194,12 @@ public class MessageHandler extends Adapter implements MqttCallback {
 
 		byte[] payload = null;
 		try {
-			payload = mapper.writeValueAsBytes(response.getPayload());
+			payload = mapper.writeValueAsBytes(response.payload());
 		} catch (Exception e) {
 			log.error("Failed to serialize RPC response", e);
 			Response fallback = Response.status(Status.INTERNAL_ERROR, "Failed to serialize RPC response");
 			try {
-				payload = mapper.writeValueAsBytes(fallback.getPayload());
+				payload = mapper.writeValueAsBytes(fallback.payload());
 			} catch (Exception fallbackException) {
 				log.error("Failed to serialize fallback RPC response", fallbackException);
 
@@ -215,7 +215,7 @@ public class MessageHandler extends Adapter implements MqttCallback {
 		properties.setCorrelationData(requestMessage.getProperties().getCorrelationData());
 
 		List<UserProperty> userProperties = properties.getUserProperties();
-		Status status = response.getStatus();
+		Status status = response.status();
 		userProperties.add(new UserProperty("status", getStatusAsJson(status)));
 
 		MqttMessage responseMessage = new MqttMessage(payload);

@@ -17,6 +17,6 @@ public class QuitHandler extends RequestHandler {
 	@Override
 	public Response handleRequest(Object ctx, Map<String, Object> args, List<UserProperty> userProperties) throws Exception {
 		logger.trace("Entering method");
-		return Response.quit();
+		return Response.quitting();
 	}
 }
