@@ -14,12 +14,12 @@ dependencies {
     testRuntimeOnly libs.junit.platform.launcher
 
     implementation libs.guava
-    implementation libs.org.eclipse.paho.mqttv5.client
-    implementation libs.slf4j
+    implementation libs.mqtt.paho.v5.client
+    implementation libs.slf4j.api
     implementation libs.jackson.databind
 
     implementation libs.commons.cli
-    implementation libs.io
+    implementation libs.jjwt
 
     api project(':mqtt-rpc-common')
 }
