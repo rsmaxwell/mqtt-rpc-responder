@@ -143,47 +143,49 @@ public class MessageHandler extends Adapter implements MqttCallback {
 
 		byte[] payload = requestMessage.getPayload();
 
-		Response response = null;
-		Request request = null;
+		Request request;
+
 		try {
-			log.debug("decoding message payload");
-			String payloadString = new String(payload);
-			request = mapper.readValue(payloadString, Request.class);
+		    log.debug("decoding message payload");
+		    String payloadString = new String(payload, StandardCharsets.UTF_8);
+		    request = mapper.readValue(payloadString, Request.class);
 		} catch (Exception e) {
-			response = Response.status(Status.BAD_REQUEST, e.getMessage());
+		    return Response.status(Status.BAD_REQUEST, e.getMessage());
 		}
 
-		if (request == null && response == null) {
-			response = Response.status(Status.BAD_REQUEST, "missing request");
-		} else if (request.function() == null) {
-			response = Response.status(Status.BAD_REQUEST, "missing function");
-		} else if (request.function().length() <= 0) {
-			response = Response.status(Status.BAD_REQUEST, "empty function");
-		} else if (response == null) {
-
-			RequestHandler handler = handlers.get(request.function());
-			if (handler == null) {
-				response = Response.status(Status.BAD_REQUEST, String.format("unexpected function: %s", request.function()));
-			} else {
-				try {
-					log.debug("before handleRequest");
-					response = handler.handleRequest(ctx, request.args(), userProperties);
-				} catch (ExpiredJwtException e) {
-					log.info("ExpiredJwtException");
-					response = Response.status(Status.BAD_REQUEST, e.getMessage());
-				} catch (RpcStatusException e) {
-					log.debug("RPC status exception: {}", e.getStatus());
-					response = Response.status(e.getStatus(), e.getMessage());
-				} catch (Exception e) {
-					log.error("Unhandled exception while handling request", e);
-					response = Response.status(Status.INTERNAL_ERROR, e.getMessage());
-				}
-			}
+		if (request == null) {
+		    return Response.status(Status.BAD_REQUEST, "missing request");
 		}
 
-		log.debug(String.format("returning: %s", response.toString()));
-		return response;
+		if (request.function() == null) {
+		    return Response.status(Status.BAD_REQUEST, "missing function");
+		}
 
+		if (request.function().isEmpty()) {
+		    return Response.status(Status.BAD_REQUEST, "empty function");
+		}
+
+		RequestHandler handler = handlers.get(request.function());
+
+		if (handler == null) {
+		    return Response.status(
+		            Status.BAD_REQUEST,
+		            String.format("unexpected function: %s", request.function()));
+		}
+
+		try {
+		    log.debug("before handleRequest");
+		    return handler.handleRequest(ctx, request.args(), userProperties);
+		} catch (ExpiredJwtException e) {
+		    log.info("ExpiredJwtException");
+		    return Response.status(Status.BAD_REQUEST, e.getMessage());
+		} catch (RpcStatusException e) {
+		    log.debug("RPC status exception: {}", e.getStatus());
+		    return Response.status(e.getStatus(), e.getMessage());
+		} catch (Exception e) {
+		    log.error("Unhandled exception while handling request", e);
+		    return Response.status(Status.INTERNAL_ERROR, e.getMessage());
+		}
 	}
 
 	private MqttMessage getResponseMessage(MqttMessage requestMessage, Response response) {
